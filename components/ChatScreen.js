@@ -4,7 +4,7 @@ import React from 'react'
 import { useAuthState } from 'react-firebase-hooks/auth';
 import styled from 'styled-components';
 import {auth, db} from '../firebase';
-import { AttachFile, MoreVert } from '@mui/icons-material';
+import { AttachFile, Message, MoreVert } from '@mui/icons-material';
 import {IconButton} from '@mui/material';
 import { useCollection } from 'react-firebase-hooks/firestore';
 import { doc, query, collection, orderBy, getDocs } from 'firebase/firestore';
@@ -16,13 +16,24 @@ function ChatScreen({chat, messages}) {
   const messageRef = doc(db, 'chats', router.query.id);
 
   const queryMessage = query(collection(messageRef, 'messages'), orderBy("timestamp", "asc"), );
-  const messageSnapshot = useCollection(queryMessage);
+  const messageSnapshot = getDocs(queryMessage);
 
   console.log(messageSnapshot);
 
   const showMessages = () => {
     if(messageSnapshot){
-      return getDocs
+       return messageSnapshot.docs.map(message => (
+        <Message 
+        key={message.id}
+        user={message.data().user}
+        message={{
+          ...messages.data(),
+          timestamp: message.data().timestamp?.toDate().getTime(),
+        }}
+        />
+      ));
+      return true;
+      // return getDocs
     }
     
 
@@ -51,6 +62,7 @@ function ChatScreen({chat, messages}) {
 
        <MessageContainer>
         {/* show messages here */}
+        {showMessages()}
         <EndOfMessage />
        </MessageContainer>
     </Container>
